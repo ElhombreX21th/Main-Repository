@@ -35,6 +35,33 @@ SaaS platform for technical operations, ticketing and RCA workflows in MedTech a
 ### ServiceNow Logic Lab
 Study project created to practice platform-like concepts such as incidents, reusable server-side logic, business rules, client-side validation and outbound REST integrations.
 
+### Doce Sabor Digital
+University extension project focused on digitizing order workflows and online presence for a local artisanal cooperative.
+
+### IBM Data Analysis Labs
+Collection of notebooks and exercises covering Python-based data analysis, transformation and exploratory workflows.
+
+## Tech Stack
+
+- Python
+- SQL
+- FastAPI
+- React
+- Next.js
+- TypeScript
+- PostgreSQL
+- Docker
+- Power BI
+- Git & GitHub
+
+## Certifications
+
+- Cloud Computing Fundamentals — IBM SkillsBuild
+- AWS Data Engineering training
+- Data analysis studies with Python and SQL
+- AI Agents and LLMs for Business
+
+## Contact
 I am a technical professional with 13+ years of experience in mission-critical healthcare and MedTech environments, now combining that background with software development, data analytics and AI-enabled workflows.
 
 My work connects field service, reliability, troubleshooting, root cause analysis and operational intelligence with modern technologies such as Python, SQL, FastAPI, React, PostgreSQL and automation tooling.
