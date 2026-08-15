@@ -1,213 +1,174 @@
-# Flavio Cruz — MedTech, Software, Data & AI
+# ReembolsaBR API
 
-Senior Field Service / Reliability professional with 13+ years in mission-critical healthcare and MedTech environments, now focused on building software, data and AI solutions for technical operations.
+Backend SaaS multiempresa para submissão, validação e aprovação de despesas corporativas. O domínio começa com documentos brasileiros, sem fixar país ou moeda na arquitetura.
 
-I connect field service, troubleshooting, root cause analysis, operational reliability and modern web/data technologies to solve real business problems.
+## Recursos
 
-## Professional Positioning
+- FastAPI, Pydantic v2 e SQLAlchemy 2 com PostgreSQL;
+- JWT, usuários multiempresa e papéis `employee`, `approver` e `admin`;
+- criação de usuários `employee` e `approver` por administradores;
+- fluxo `draft → submitted → approved/rejected/reimbursed`;
+- extração inicial de CNPJ, chave NF-e, data e valor por regex;
+- duplicidade por chave fiscal ou pela combinação CNPJ/data/valor dentro da empresa;
+- políticas configuráveis por categoria e país (exemplo: alimentação até BRL 150);
+- trilha de auditoria para criação e mudanças de estado;
+- aprovação em duas alçadas para despesas acima de BRL 5.000;
+- upload privado de comprovantes de até 5 MB e processamento assíncrono extensível para OCR;
+- refresh tokens com rotação e proteção contra replay;
+- exportação LGPD, anonimização da conta, relatórios e exportação para ERP;
+- Celery/Redis para processamento assíncrono de comprovantes;
+- migrações Alembic, Docker Compose e testes unitários.
 
-**MedTech Systems + Software Engineering + Data/AI for technical operations.**
+## Arquitetura
 
-I build practical solutions for:
+```text
+app/
+├── api/routes/       # HTTP: auth, despesas, políticas e auditoria
+├── core/             # configuração, JWT e RBAC
+├── db/               # engine, sessão e base declarativa
+├── models/           # entidades SQLAlchemy
+├── parsers/          # parsers fiscais extensíveis por país
+├── schemas/          # contratos Pydantic
+├── services/         # regras de negócio
+└── tasks/            # jobs Celery
+```
 
-- Incident management and troubleshooting
-- Root cause analysis (RCA)
-- Technical support workflows
-- Service operations visibility
-- MTTR reduction
-- Data-driven operational decisions
-- Automation for field service and reliability teams
+Toda entidade de negócio carrega `organization_id`. Valores usam `Numeric`, datas são separadas de timestamps, e `country_code`/`currency` permitem acrescentar parsers e políticas de outros países.
 
-## Core Strengths
+## Execução com Docker
 
-- MedTech systems, diagnostics and technical operations
-- Field service, reliability and incident management
-- Root cause analysis and structured troubleshooting
-- Full-stack web applications and API development
-- Data analysis with Python, SQL and Power BI
-- AI-assisted workflows and operational automation
-- Cross-functional communication in regulated environments
+1. Copie a configuração: `cp .env.example .env` (troque `SECRET_KEY` em produção).
+2. Suba e migre: `docker compose up --build -d`.
+3. Abra Swagger em http://localhost:8000/docs e health check em http://localhost:8000/health.
 
-## Featured Projects
+A interface web fica disponível em **http://localhost:8000/**. Ela inclui autenticação, cadastro da
+empresa, dashboard responsivo, criação e acompanhamento de despesas, aprovações, políticas,
+relatórios e gestão da equipe. Não há build separado: os assets são servidos diretamente pela API.
 
-### FPConnect RCA Copilot
+### Visualização imediata, sem Docker
 
-SaaS platform for technical operations, ticketing and RCA workflows in healthcare and MedTech environments.
+#### Windows — dois cliques
 
-**Problem addressed**
+Depois de aplicar ou baixar os arquivos, dê dois cliques em **`ABRIR_DEMO.bat`** na pasta do
+projeto. Alternativamente, abra diretamente **`app/web/demo.html`**. Essa opção funciona como um
+arquivo local: não usa servidor, terminal, Docker ou instalação de dependências.
 
-Technical operations teams often deal with dispersed incident history, informal troubleshooting notes, weak traceability and inconsistent root cause analysis.
+#### Preview com servidor local
 
-**Solution**
+Para conhecer a interface com dados demonstrativos por um servidor local, execute:
 
-A web/mobile platform designed to centralize tickets, structure RCA workflows and transform service history into operational intelligence.
+```bash
+python scripts/preview_ui.py
+```
 
-**Stack**
+Abra **http://127.0.0.1:4173/demo**. O modo demonstração permite navegar pelo dashboard, despesas,
+aprovações, relatórios, políticas e equipe sem gravar dados. Com a aplicação completa em execução,
+`http://localhost:8000/demo` oferece a mesma apresentação e `/` usa os dados reais da API.
 
-- Next.js, React and TypeScript
-- FastAPI
-- PostgreSQL / Neon
-- Redis / Upstash
-- Docker
-- React Native / Expo
-- CI/CD with GitHub Actions
-- Cloud deployment architecture using Vercel, Railway and Neon
+### Publicação na Vercel
 
-**My role**
+O `vercel.json` publica somente a demonstração web e abre o modo demo automaticamente no domínio
+`*.vercel.app`. Depois de autenticar a CLI (`npx vercel login`), publique com:
 
-- End-to-end architecture and development
-- Data modeling and API design
-- RCA workflow design
-- Frontend, backend and mobile structure
-- Product positioning for real technical operations
+```bash
+npx vercel --prod
+```
 
----
+O container da API executa `alembic upgrade head` antes do Uvicorn. Para acompanhar: `docker compose logs -f api worker`.
 
-### Project-Principal
+## Fluxo de exemplo
 
-Study project focused on platform-style automation concepts inspired by service management workflows.
+Crie a primeira organização e seu administrador (endpoint público apenas para bootstrap):
 
-**What it demonstrates**
+```bash
+curl -X POST localhost:8000/api/v1/auth/register -H 'Content-Type: application/json' \
+  -d '{"organization_name":"Acme Brasil","email":"admin@acme.com","password":"Senha-forte-123"}'
+```
 
-- Incident workflow logic
-- Reusable server-side logic
-- Business-rule style automation
-- Client-side validation concepts
-- REST integration reasoning
+Obtenha o token:
 
-**Portfolio role**
+```bash
+TOKEN=$(curl -s -X POST localhost:8000/api/v1/auth/token -H 'Content-Type: application/x-www-form-urlencoded' \
+  -d 'username=admin@acme.com&password=Senha-forte-123' | python -c 'import json,sys; print(json.load(sys.stdin)["access_token"])')
+```
 
-Secondary project for technical interviews. It demonstrates workflow reasoning, automation logic and service-platform thinking.
+Crie uma política e uma despesa:
 
----
+```bash
+curl -X POST localhost:8000/api/v1/policies -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+  -d '{"category":"meals","country_code":"BR","currency":"BRL","max_amount":150}'
 
-### Doce Sabor Digital
-
-University extension project focused on digitizing order workflows and improving the online presence of a local artisanal cooperative.
-
-**Problem addressed**
-
-The cooperative managed orders manually through informal channels, which caused loss of information, payment confusion and limited commercial reach.
-
-**Solution**
-
-A digital workflow for order organization, customer visibility and operational control.
-
-**Impact narrative**
-
-This project demonstrates the use of web development to solve a real community and business problem, connecting technology, usability and local economic development.
-
----
-
-### IBM Data Analysis Labs
-
-Collection of notebooks and exercises covering Python-based data analysis, transformation and exploratory workflows.
-
-**What it demonstrates**
-
-- Python for data analysis
-- Data cleaning and transformation
-- Exploratory analysis
-- Notebook-based analytical workflow
-
----
-
-### AW Client Report Portal
-
-Client reporting portal project focused on organizing and presenting operational or customer-facing information.
-
-**What it demonstrates**
-
-- Web interface structure
-- Report-oriented application thinking
-- Client-facing data presentation
-
-## Tech Stack
-
-**Backend**
-
-- Python
-- FastAPI
-- Node.js
-- REST APIs
-
-**Frontend**
-
-- React
-- Next.js
-- TypeScript
-- JavaScript
-- HTML
-- CSS
-- Bootstrap
-
-**Data**
-
-- SQL
-- PostgreSQL
-- MySQL / MariaDB
-- pandas
-- Jupyter
-- Power BI
-
-**DevOps and Tools**
-
-- Git
-- GitHub
-- Docker
-- Vercel
-- Railway
-- Neon
-- Upstash
-
-**Professional Concepts**
-
-- RCA
-- MTTR
-- Reliability
-- Incident management
-- Troubleshooting
-- Automation
-- CRUD
-- OOP
-- API design
-
-## Certifications and Studies
-
-- CST in Web Development — Anhanguera
-- Cloud Computing Fundamentals — IBM SkillsBuild
-- AWS Data Engineering training
-- Data analysis with Python and SQL
-- AI Agents and LLMs for Business
-
-## Repository Quality Standard
-
-Strategic repositories in this portfolio should answer quickly:
-
-1. What the project is
-2. What problem it solves
-3. Which stack it uses
-4. My role in the project
-5. How to run it
-6. Current status
-7. Next improvements
-
-## Career Focus
-
-I am targeting roles where my field experience and software skills create a stronger advantage than a generic developer profile:
-
-- Technical Support Engineer
-- Application Support Engineer
-- Solutions Engineer
-- Support Analyst L2/L3
-- Field Service Digital Solutions
-- Service Operations Analyst
-- Reliability / RCA Analyst
-- Full Stack Developer focused on operations tools
-- Data / Operations Analytics roles
-
-## Contact
-
-- GitHub: [github.com/ElhombreX21th](https://github.com/ElhombreX21th)
-- LinkedIn: [linkedin.com/in/flavio-cruz-09751820](https://www.linkedin.com/in/flavio-cruz-09751820)
-- Email: [flavioc.rj@hotmail.com](mailto:flavioc.rj@hotmail.com)
+curl -X POST localhost:8000/api/v1/expenses -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+  -d '{"category":"meals","amount":89.90,"currency":"BRL","expense_date":"2026-08-14","merchant_tax_id":"12.345.678/0001-90","invoice_key":"12345678901234567890123456789012345678901234","country_code":"BR"}'
+```
+
+Use `POST /expenses/{id}/submit`; aprovadores/admins usam `/approve`, `/reject` e `/reimburse`. Consulte `/audit-logs` (admin). O endpoint `/expenses/parse-receipt` demonstra o parser; em produção, OCR deve produzir o texto antes desta etapa.
+
+Administradores criam os demais usuários do tenant em `POST /api/v1/users`:
+
+```bash
+curl -X POST localhost:8000/api/v1/users -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"aprovador@acme.com","password":"Senha-forte-123","role":"approver"}'
+```
+
+A proteção contra duplicidade existe tanto no serviço quanto no banco. Dentro de uma mesma
+organização, não podem existir duas despesas com a mesma chave fiscal nem com a mesma combinação
+de CNPJ, data e valor. Violações concorrentes das constraints retornam HTTP `409`.
+
+## Aprovações e comprovantes
+
+Ao enviar uma despesa, o sistema cria uma aprovação; despesas acima de BRL 5.000 criam duas
+alçadas sequenciais. Ações em `/{id}/approve` e `/{id}/reject` aceitam
+`{"comment":"Justificativa"}`. Comprovantes JPEG, PNG, PDF ou texto de até 5 MB podem ser enviados
+como multipart em `POST /api/v1/expenses/{id}/receipt`. O volume `receipt_data` mantém os arquivos;
+em produção, substitua-o por object storage privado com criptografia e URLs temporárias.
+
+## Segurança, privacidade e integrações
+
+- `POST /api/v1/auth/refresh` rotaciona o refresh token; um token utilizado não pode ser repetido;
+- `GET /api/v1/privacy/me/export` entrega os dados do titular e `DELETE /privacy/me` anonimiza a conta;
+- `GET /api/v1/reports/expenses?start=YYYY-MM-DD&end=YYYY-MM-DD` agrega despesas por categoria;
+- `GET /api/v1/integrations/erp/approved-expenses` fornece lançamentos aprovados para integração;
+- a trilha de auditoria registra alterações relevantes dentro do tenant.
+
+O parser atual recebe texto. OCR real deve ser conectado ao job Celery `receipts.parse_br`, evitando
+processamento pesado no request da API.
+
+## Desenvolvimento local
+
+Requer Python 3.12, PostgreSQL e Redis:
+
+```bash
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements-dev.txt
+alembic upgrade head
+uvicorn app.main:app --reload
+celery -A app.worker.celery_app worker --loglevel=info
+```
+
+Qualidade e testes:
+
+```bash
+pytest
+ruff check .
+```
+
+## Segurança e próximos passos
+
+O registro é um bootstrap propositalmente simples; desabilite-o ou proteja-o por convite após criar
+o primeiro tenant. Em produção, use segredo gerenciado, TLS, rate limiting, object storage privado,
+políticas formais de retenção, SSO/MFA e conectores homologados para cada ERP ou instituição
+financeira.
+
+## API
+
+- `POST /api/v1/auth/register`, `POST /api/v1/auth/token`
+- `POST /api/v1/auth/refresh`
+- `POST /api/v1/users` (admin; cria employee/approver)
+- `GET/POST /api/v1/expenses`, ações de workflow e parser
+- `GET/POST /api/v1/policies`
+- `GET /api/v1/audit-logs` (admin)
+- `GET /api/v1/reports/expenses`, `GET /api/v1/integrations/erp/approved-expenses`
+- `GET /api/v1/privacy/me/export`, `DELETE /api/v1/privacy/me`
+- `GET /health`

@@ -1,0 +1,40 @@
+name: Backend CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: reembolso_test
+          POSTGRES_USER: reembolso
+          POSTGRES_PASSWORD: reembolso
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U reembolso"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - run: ruff check .
+      - run: python -m compileall -q app tests alembic
+      - run: pytest -q
+      - run: alembic upgrade head
+        env:
+          DATABASE_URL: postgresql+psycopg://reembolso:reembolso@localhost:5432/reembolso_test
+      - run: docker build -t reembolsabr:${{ github.sha }} .

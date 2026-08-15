@@ -1,0 +1,39 @@
+services:
+  api:
+    build: .
+    env_file: .env
+    ports: ["8000:8000"]
+    depends_on:
+      db: {condition: service_healthy}
+      redis: {condition: service_healthy}
+    volumes: ["receipt_data:/app/storage/receipts"]
+  worker:
+    build: .
+    command: celery -A app.worker.celery_app worker --loglevel=info
+    env_file: .env
+    depends_on:
+      db: {condition: service_healthy}
+      redis: {condition: service_healthy}
+    volumes: ["receipt_data:/app/storage/receipts"]
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: reembolso
+      POSTGRES_USER: reembolso
+      POSTGRES_PASSWORD: reembolso
+    volumes: ["postgres_data:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U reembolso"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+volumes:
+  postgres_data:
+  receipt_data:

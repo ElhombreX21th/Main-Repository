@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Gestão moderna de despesas e reembolsos corporativos" />
+    <title>ReembolsaBR — Gestão de despesas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="assets/styles.css" />
+  </head>
+  <body>
+    <div id="toast" class="toast" role="status"></div>
+
+    <main id="auth-screen" class="auth-shell">
+      <section class="auth-showcase">
+        <a class="brand brand-light" href="#"><span class="brand-mark">R</span><span>Reembolsa<span>BR</span></span></a>
+        <div class="showcase-copy">
+          <span class="eyebrow light">DESPESAS SEM COMPLICAÇÃO</span>
+          <h1>Mais controle.<br /><em>Menos papelada.</em></h1>
+          <p>Do comprovante ao reembolso, tudo em um fluxo simples, seguro e transparente.</p>
+        </div>
+        <div class="showcase-card">
+          <div class="mini-icon">✓</div>
+          <div><strong>Aprovações inteligentes</strong><span>Políticas automáticas e trilha completa</span></div>
+          <div class="avatars"><i></i><i></i><i></i><b>+8</b></div>
+        </div>
+        <p class="copyright">© 2026 ReembolsaBR · Feito para empresas brasileiras</p>
+      </section>
+
+      <section class="auth-panel">
+        <div class="auth-box">
+          <div class="mobile-brand"><span class="brand-mark">R</span>ReembolsaBR</div>
+          <div class="auth-heading">
+            <span class="eyebrow">BEM-VINDO DE VOLTA</span>
+            <h2>Acesse sua conta</h2>
+            <p>Entre para acompanhar suas despesas e aprovações.</p>
+          </div>
+          <form id="login-form">
+            <label>E-mail corporativo<input id="login-email" type="email" placeholder="voce@empresa.com.br" required autocomplete="email" /></label>
+            <label>Senha<input id="login-password" type="password" placeholder="Sua senha" required autocomplete="current-password" /></label>
+            <button class="btn primary wide" type="submit">Entrar na plataforma <span>→</span></button>
+          </form>
+          <div class="divider"><span>Primeiro acesso?</span></div>
+          <button id="show-register" class="btn secondary wide">Criar conta da empresa</button>
+          <form id="register-form" class="hidden">
+            <button type="button" class="back-link" id="back-login">← Voltar para login</button>
+            <label>Empresa<input id="register-company" required placeholder="Nome da sua empresa" /></label>
+            <label>E-mail do administrador<input id="register-email" type="email" required placeholder="admin@empresa.com.br" /></label>
+            <label>Senha<input id="register-password" type="password" minlength="10" required placeholder="Mínimo de 10 caracteres" /></label>
+            <button class="btn primary wide" type="submit">Criar ambiente <span>→</span></button>
+          </form>
+          <p class="safe-note">🔒 Seus dados são protegidos e criptografados</p>
+        </div>
+      </section>
+    </main>
+
+    <div id="app-screen" class="app-shell hidden">
+      <aside class="sidebar">
+        <a class="brand" href="#"><span class="brand-mark">R</span><span>Reembolsa<span>BR</span></span></a>
+        <nav id="nav">
+          <p>VISÃO GERAL</p>
+          <button data-page="dashboard" class="active"><span>⌂</span>Início</button>
+          <p>DESPESAS</p>
+          <button data-page="expenses"><span>▤</span>Minhas despesas</button>
+          <button data-page="approvals"><span>✓</span>Aprovações <b id="approval-badge">0</b></button>
+          <p>GESTÃO</p>
+          <button data-page="reports"><span>▥</span>Relatórios</button>
+          <button data-page="policies"><span>◇</span>Políticas</button>
+          <button data-page="users"><span>♙</span>Equipe</button>
+        </nav>
+        <div class="sidebar-help"><span>?</span><div><strong>Precisa de ajuda?</strong><small>Consulte nosso guia</small></div></div>
+        <button id="logout" class="logout">↪ Sair</button>
+      </aside>
+
+      <div class="workspace">
+        <header class="topbar">
+          <button id="menu-toggle" class="menu-toggle">☰</button>
+          <div class="search">⌕ <input id="global-search" placeholder="Buscar despesas..." /></div>
+          <div class="top-actions"><button class="icon-btn">♡<i></i></button><div class="user-chip"><span id="avatar">AD</span><div><strong id="user-name">Administrador</strong><small id="user-role">Admin</small></div></div></div>
+        </header>
+        <main id="page" class="page"></main>
+      </div>
+    </div>
+
+    <dialog id="expense-modal" class="modal">
+      <form id="expense-form" method="dialog">
+        <div class="modal-head"><div><span class="eyebrow">NOVA SOLICITAÇÃO</span><h2>Adicionar despesa</h2></div><button type="button" class="close-modal">×</button></div>
+        <div class="form-grid">
+          <label>Categoria<select id="exp-category" required><option value="meals">Alimentação</option><option value="travel">Viagem</option><option value="transport">Transporte</option><option value="lodging">Hospedagem</option><option value="supplies">Materiais</option></select></label>
+          <label>Valor<input id="exp-amount" type="number" min="0.01" step="0.01" required placeholder="0,00" /></label>
+          <label>Data<input id="exp-date" type="date" required /></label>
+          <label>Centro de custo<input id="exp-cost" placeholder="Ex.: SP-01" /></label>
+          <label class="full">CNPJ do estabelecimento<input id="exp-cnpj" placeholder="00.000.000/0000-00" /></label>
+          <label class="full">Chave da nota<input id="exp-key" maxlength="54" placeholder="44 dígitos da NF-e" /></label>
+          <label class="full">Descrição<textarea id="exp-description" rows="3" placeholder="Conte o motivo da despesa"></textarea></label>
+        </div>
+        <div class="modal-actions"><button type="button" class="btn secondary close-modal">Cancelar</button><button type="submit" class="btn primary">Salvar despesa</button></div>
+      </form>
+    </dialog>
+
+    <script src="assets/app.js" defer></script>
+  </body>
+</html>
