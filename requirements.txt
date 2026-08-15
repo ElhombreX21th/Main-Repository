@@ -9,5 +9,5 @@ PyJWT==2.10.1
 pwdlib[argon2]==0.2.1
 python-multipart==0.0.20
 celery[redis]==5.5.3
-redis==6.4.0
+redis>=6.0,<7.0
 email-validator==2.2.0
