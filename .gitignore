@@ -26,6 +26,18 @@ wheels/
 .env.local
 .env.*
 
+# Python specific
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+.ENV
+.python-version
+
 # Logs
 *.log
 server.log
