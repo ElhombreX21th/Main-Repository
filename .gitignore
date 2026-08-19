@@ -20,28 +20,35 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.pytest_cache/
+.hypothesis/
+.tox/
+.mypy_cache/
+
+# Database
+reembolso.db
 
 # Environment
 .env
 .env.local
 .env.*
 
-# Python specific
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-env/
-venv/
-.venv/
-.ENV
-.python-version
+# Compressed files
+*.tar.gz
 
-# Logs
-*.log
-server.log
+# IDE
+.vscode/
+.idea/
 
-# Database
-reembolso.db
+# OS
+.DS_Store
+Thumbs.db
 ```

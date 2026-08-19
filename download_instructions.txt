@@ -1,0 +1,8 @@
+INSTRUÇÕES PARA BAIXAR O PROJETO:
+
+1. O arquivo ReembolsaBR_Completo.tar.gz está em /workspace/
+2. Tamanho: 44KB
+3. Para baixar no seu computador:
+   - Use a interface do seu editor (VS Code, etc.) para fazer download
+   - Ou use scp: scp usuario@servidor:/workspace/ReembolsaBR_Completo.tar.gz ~/Documentos/
+   - Ou copie o conteúdo via interface gráfica do editor
