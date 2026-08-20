@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="/static/styles.css?v=20260820-gallery" />
+    <link rel="stylesheet" href="/static/styles.css?v=20260820-ocr" />
   </head>
   <body>
     <div id="app" class="app-shell">
@@ -93,13 +93,14 @@
         <div class="receipt-capture"><div><span class="eyebrow">1 / CAPTURA</span><h3>Anexe ou fotografe o recibo</h3><p>Use a câmera do celular ou escolha uma imagem da galeria.</p></div><div class="capture-actions"><label class="capture-button"><input id="receipt-gallery" type="file" accept="image/*" /> <span class="capture-icon">⌁</span> Galeria <span>↗</span></label><label class="capture-button"><input id="receipt-camera" type="file" accept="image/*" capture="environment" /> <span class="capture-icon">⌁</span> Câmera <span>↗</span></label></div><img id="receipt-preview" class="receipt-preview hidden" alt="Prévia do recibo" /><button id="ocr-receipt-button" class="outline-button hidden" type="button">Ler dados da foto <span>↗</span></button></div>
         <div class="form-step-label"><span class="eyebrow">2 / REVISÃO</span><small>Confira os dados antes de enviar.</small></div>
         <div class="two-fields"><label class="field">Finalidade<select name="category" required><option value="">Selecione uma finalidade</option><option value="breakfast">Café da manhã</option><option value="lunch">Almoço</option><option value="dinner">Jantar</option><option value="transport">Transporte</option><option value="lodging">Hospedagem</option><option value="other">Outra finalidade</option></select></label><label class="field">Valor<input name="amount" type="number" min="0.01" step="0.01" placeholder="89,90" required /></label></div>
-        <div class="two-fields"><label class="field">Data<input name="expense_date" type="date" required /></label><label class="field">Moeda<select name="currency"><option>BRL</option><option>USD</option><option>EUR</option></select></label></div>
+        <div class="two-fields"><label class="field">Data<input name="expense_date" type="date" required /></label><label class="field">Hora<input name="expense_time" type="time" step="1" /></label></div>
+        <label class="field">Moeda<select name="currency"><option>BRL</option><option>USD</option><option>EUR</option></select></label>
         <div class="two-fields"><label class="field">Cidade<input name="merchant_city" type="text" placeholder="Ex.: São Paulo" /></label><label class="field">Estado / UF<select name="merchant_state"><option value="">Selecione</option><option>AC</option><option>AL</option><option>AM</option><option>AP</option><option>BA</option><option>CE</option><option>DF</option><option>ES</option><option>GO</option><option>MA</option><option>MG</option><option>MS</option><option>MT</option><option>PA</option><option>PB</option><option>PE</option><option>PI</option><option>PR</option><option>RJ</option><option>RN</option><option>RO</option><option>RR</option><option>RS</option><option>SC</option><option>SE</option><option>SP</option><option>TO</option></select></label></div>
         <label class="field">Estabelecimento / CNPJ<input name="merchant_tax_id" type="text" placeholder="Opcional" /></label><label class="field">Chave da nota fiscal<input name="invoice_key" type="text" placeholder="Opcional" /></label><label class="field">Descrição<textarea name="description" rows="2" placeholder="Ex.: almoço com cliente"></textarea></label>
         <div class="receipt-helper"><div><strong>Cole o texto fiscal</strong><small>Use esta opção quando o texto do recibo já estiver disponível.</small></div><textarea id="receipt-text" rows="2" placeholder="Cole aqui o texto do recibo..."></textarea><button id="parse-receipt-button" class="outline-button" type="button">Preencher dados <span>↗</span></button></div>
         <div class="form-step-label"><span class="eyebrow">3 / ENVIO</span><small>A despesa será salva como rascunho para revisão.</small></div><p id="expense-feedback" class="feedback"></p><button class="primary-button" type="submit">Registrar despesa <span class="button-arrow">↗</span></button>
       </form>
     </dialog>
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script><script src="/static/app.js?v=20260820-gallery"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script><script src="/static/app.js?v=20260820-ocr"></script>
   </body>
 </html>

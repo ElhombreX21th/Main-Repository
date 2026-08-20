@@ -267,7 +267,7 @@ async function submitExpense(event) {
   const form = new FormData(formElement);
   const payload = Object.fromEntries(form.entries());
   payload.amount = Number(payload.amount);
-  ["merchant_tax_id", "merchant_city", "merchant_state", "invoice_key", "description"].forEach((key) => { if (!payload[key]) payload[key] = null; });
+  ["expense_time", "merchant_tax_id", "merchant_city", "merchant_state", "invoice_key", "description"].forEach((key) => { if (!payload[key]) payload[key] = null; });
   try {
     const createdExpense = await request("/expenses", { method: "POST", body: JSON.stringify(payload) });
     state.expenses.unshift(createdExpense);
@@ -289,13 +289,25 @@ async function parseReceipt() {
   try {
     const parsed = await request("/expenses/parse-receipt", { method: "POST", body: JSON.stringify({ text }) });
     const form = $("#expense-form");
-    if (parsed.amount) form.elements.amount.value = parsed.amount;
-    if (parsed.expense_date) form.elements.expense_date.value = parsed.expense_date;
-    if (parsed.merchant_tax_id) form.elements.merchant_tax_id.value = parsed.merchant_tax_id;
-    if (parsed.merchant_city) form.elements.merchant_city.value = parsed.merchant_city;
-    if (parsed.merchant_state) form.elements.merchant_state.value = parsed.merchant_state;
-    if (parsed.invoice_key) form.elements.invoice_key.value = parsed.invoice_key;
-    setFeedback("#expense-feedback", "Dados identificados e preenchidos com sucesso.", true);
+    const filled = [];
+    const fillField = (name, value, label, formatter = (item) => item) => {
+      if (!value || !form.elements[name]) return;
+      form.elements[name].value = formatter(value);
+      filled.push(label);
+    };
+    fillField("amount", parsed.amount, "valor", (value) => Number(value).toFixed(2));
+    fillField("expense_date", parsed.expense_date, "data");
+    fillField("expense_time", parsed.expense_time, "hora", (value) => value.slice(0, 8));
+    fillField("merchant_tax_id", parsed.merchant_tax_id, "CNPJ");
+    fillField("merchant_city", parsed.merchant_city, "cidade");
+    fillField("merchant_state", parsed.merchant_state, "UF");
+    fillField("invoice_key", parsed.invoice_key, "chave fiscal");
+    if (!filled.length) {
+      setFeedback("#expense-feedback", "Não encontrei dados suficientes no recibo. Verifique a foto ou preencha os campos manualmente.");
+      return { parsed, filled };
+    }
+    setFeedback("#expense-feedback", `Dados preenchidos: ${filled.join(", ")}.`, true);
+    return { parsed, filled };
   } catch (error) {
     setFeedback("#expense-feedback", error.message);
   }
@@ -318,21 +330,91 @@ async function readReceiptImage(event) {
   setFeedback("#expense-feedback", "Foto adicionada. Confira o enquadramento antes de ler os dados.", true);
 }
 
+function loadReceiptBitmap(file) {
+  if ("createImageBitmap" in window) {
+    return createImageBitmap(file).catch(() => loadReceiptImage(file));
+  }
+  return loadReceiptImage(file);
+}
+
+function loadReceiptImage(file) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    const url = URL.createObjectURL(file);
+    image.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve(image);
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("Não foi possível preparar a foto do recibo."));
+    };
+    image.src = url;
+  });
+}
+
+async function prepareReceiptImage(file) {
+  const image = await loadReceiptBitmap(file);
+  const width = image.width || image.naturalWidth;
+  const height = image.height || image.naturalHeight;
+  if (!width || !height) return file;
+
+  const scale = Math.min(2200 / Math.max(width, height), Math.max(1, 1400 / width));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(width * scale);
+  canvas.height = Math.round(height * scale);
+
+  const context = canvas.getContext("2d", { willReadFrequently: true });
+  if (!context) return file;
+  context.fillStyle = "#ffffff";
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.drawImage(image, 0, 0, canvas.width, canvas.height);
+  if (typeof image.close === "function") image.close();
+
+  const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+  const pixels = imageData.data;
+  for (let index = 0; index < pixels.length; index += 4) {
+    const gray = (pixels[index] * 0.299) + (pixels[index + 1] * 0.587) + (pixels[index + 2] * 0.114);
+    const contrasted = Math.max(0, Math.min(255, ((gray - 128) * 1.45) + 128));
+    const value = contrasted > 245 ? 255 : contrasted < 55 ? 0 : contrasted;
+    pixels[index] = value;
+    pixels[index + 1] = value;
+    pixels[index + 2] = value;
+    pixels[index + 3] = 255;
+  }
+  context.putImageData(imageData, 0, 0);
+  return canvas;
+}
+
+function setReceiptButtonText(button, text) {
+  const node = [...button.childNodes].find((child) => child.nodeType === Node.TEXT_NODE);
+  if (node) node.textContent = text;
+}
+
 async function ocrReceipt() {
   const file = state.receiptFile;
   if (!file || !window.Tesseract) return setFeedback("#expense-feedback", "Não foi possível iniciar a leitura da foto.");
   const button = $("#ocr-receipt-button");
   button.disabled = true;
-  button.firstChild.textContent = "Lendo foto... ";
+  setReceiptButtonText(button, "Preparando foto... ");
   try {
-    const result = await window.Tesseract.recognize(file, "por", { logger: (message) => { if (message.status === "recognizing text") setFeedback("#expense-feedback", `Lendo recibo: ${Math.round(message.progress * 100)}%`); } });
-    $("#receipt-text").value = result.data.text;
+    const preparedImage = await prepareReceiptImage(file);
+    setReceiptButtonText(button, "Lendo foto... ");
+    const result = await window.Tesseract.recognize(preparedImage, "por+eng", {
+      logger: (message) => {
+        if (message.status === "recognizing text") setFeedback("#expense-feedback", `Lendo recibo: ${Math.round(message.progress * 100)}%`);
+      },
+      tessedit_pageseg_mode: "6",
+    });
+    const text = result.data.text.trim();
+    if (!text) throw new Error("Nenhum texto foi encontrado na foto. Tente uma imagem mais nítida.");
+    $("#receipt-text").value = text;
     await parseReceipt();
   } catch (error) {
-    setFeedback("#expense-feedback", "Não foi possível ler a foto. Confira os campos manualmente.");
+    setFeedback("#expense-feedback", error.message || "Não foi possível ler a foto. Confira os campos manualmente.");
   } finally {
     button.disabled = false;
-    button.firstChild.textContent = "Ler dados da foto ";
+    setReceiptButtonText(button, "Ler dados da foto ");
   }
 }
 
