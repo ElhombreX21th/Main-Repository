@@ -6,6 +6,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from app.core.security import create_access_token, decode_access_token
 from app.db.base import Base
 from app.db.session import get_db
 from app.main import app
@@ -59,6 +60,24 @@ def login(client: TestClient, email: str, password: str = "Senha-forte-123") -> 
     assert response.status_code == 200, response.text
     body = response.json()
     return {"Authorization": f"Bearer {body['access_token']}"}
+
+
+def test_auth_token_uses_stable_email_subject_and_accepts_legacy_uuid(client: TestClient):
+    email = "admin-token@example.com"
+    headers = register_admin(client, email=email, organization="Token Brasil")
+    token = headers["Authorization"].removeprefix("Bearer ")
+
+    assert decode_access_token(token) == email
+
+    profile_response = client.get("/api/v1/auth/me", headers=headers)
+    assert profile_response.status_code == 200, profile_response.text
+    profile = profile_response.json()
+    assert profile["email"] == email
+
+    legacy_headers = {"Authorization": f"Bearer {create_access_token(profile['id'])}"}
+    legacy_response = client.get("/api/v1/auth/me", headers=legacy_headers)
+    assert legacy_response.status_code == 200, legacy_response.text
+    assert legacy_response.json()["email"] == email
 
 
 def test_expense_lifecycle_audit_and_tenant_isolation(client: TestClient):

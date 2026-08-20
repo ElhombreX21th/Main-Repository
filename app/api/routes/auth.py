@@ -14,7 +14,7 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 def token_for(user: User) -> Token:
     return Token(
-        access_token=create_access_token(str(user.id)),
+        access_token=create_access_token(user.email.lower()),
         first_name=user.full_name.split()[0] if user.full_name else None,
         role=user.role,
     )

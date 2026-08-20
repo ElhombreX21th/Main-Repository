@@ -4,6 +4,7 @@ from collections.abc import Callable
 import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -16,10 +17,17 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.api_prefix}/auth/token
 
 def current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
     try:
-        user_id = uuid.UUID(decode_access_token(token))
-    except (jwt.InvalidTokenError, ValueError) as exc:
+        subject = decode_access_token(token)
+    except jwt.InvalidTokenError as exc:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Token inválido.") from exc
-    user = db.get(User, user_id)
+
+    user = db.scalar(select(User).where(User.email == subject.lower()))
+    if not user:
+        try:
+            user = db.get(User, uuid.UUID(subject))
+        except ValueError:
+            user = None
+
     if not user or not user.is_active:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Usuário não encontrado ou inativo.")
     return user
