@@ -9,12 +9,14 @@ from app.api.routes import audit, auth, expenses, policies
 from app.core.config import settings
 from app.db.base import Base
 from app.db.session import engine
+from app.services.seed import seed_admin_user
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     if engine.url.get_backend_name() == "sqlite":
         Base.metadata.create_all(bind=engine)
+    seed_admin_user()
     yield
 
 
@@ -34,4 +36,7 @@ app.mount("/static", StaticFiles(directory=frontend_dir), name="static")
 
 @app.get("/", include_in_schema=False)
 def frontend():
-    return FileResponse(frontend_dir / "index.html")
+    return FileResponse(
+        frontend_dir / "index.html",
+        headers={"Cache-Control": "no-store, max-age=0"},
+    )

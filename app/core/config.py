@@ -17,6 +17,10 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379/0"
     secret_key: str = "development-secret-change-in-production"
     access_token_expire_minutes: int = 60
+    seed_admin_email: str | None = None
+    seed_admin_password: str | None = None
+    seed_admin_full_name: str = "Administrador"
+    seed_admin_organization: str = "ReembolsaBR"
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 

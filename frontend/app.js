@@ -1,5 +1,5 @@
 const API = "/api/v1";
-const state = { token: localStorage.getItem("reembolsabr_token"), email: localStorage.getItem("reembolsabr_email") || "", firstName: localStorage.getItem("reembolsabr_first_name") || "você", role: localStorage.getItem("reembolsabr_role") || "", userId: localStorage.getItem("reembolsabr_user_id") || "", expenses: [], policies: [], users: [], authMode: "login" };
+const state = { token: localStorage.getItem("reembolsabr_token"), email: localStorage.getItem("reembolsabr_email") || "", firstName: localStorage.getItem("reembolsabr_first_name") || "você", role: localStorage.getItem("reembolsabr_role") || "", userId: localStorage.getItem("reembolsabr_user_id") || "", expenses: [], policies: [], users: [], authMode: "login", receiptFile: null, receiptPreviewUrl: "" };
 window.__reembolsabrReady = false;
 
 const $ = (selector) => document.querySelector(selector);
@@ -246,6 +246,13 @@ function openExpenseDialog() {
   const form = $("#expense-form");
   form.reset();
   $("#receipt-text").value = "";
+  ["#receipt-gallery", "#receipt-camera"].forEach((selector) => {
+    const input = $(selector);
+    if (input) input.value = "";
+  });
+  if (state.receiptPreviewUrl) URL.revokeObjectURL(state.receiptPreviewUrl);
+  state.receiptFile = null;
+  state.receiptPreviewUrl = "";
   $("#receipt-preview").classList.add("hidden");
   $("#ocr-receipt-button").classList.add("hidden");
   setFeedback("#expense-feedback");
@@ -294,18 +301,25 @@ async function parseReceipt() {
   }
 }
 
-async function readReceiptImage() {
-  const file = $("#receipt-image").files[0];
+async function readReceiptImage(event) {
+  const file = event.currentTarget.files[0];
   if (!file) return;
+  if (!file.type.startsWith("image/")) {
+    event.currentTarget.value = "";
+    return setFeedback("#expense-feedback", "Selecione uma imagem do recibo.");
+  }
+  if (state.receiptPreviewUrl) URL.revokeObjectURL(state.receiptPreviewUrl);
+  state.receiptFile = file;
+  state.receiptPreviewUrl = URL.createObjectURL(file);
   const preview = $("#receipt-preview");
-  preview.src = URL.createObjectURL(file);
+  preview.src = state.receiptPreviewUrl;
   preview.classList.remove("hidden");
   $("#ocr-receipt-button").classList.remove("hidden");
   setFeedback("#expense-feedback", "Foto adicionada. Confira o enquadramento antes de ler os dados.", true);
 }
 
 async function ocrReceipt() {
-  const file = $("#receipt-image").files[0];
+  const file = state.receiptFile;
   if (!file || !window.Tesseract) return setFeedback("#expense-feedback", "Não foi possível iniciar a leitura da foto.");
   const button = $("#ocr-receipt-button");
   button.disabled = true;
@@ -365,7 +379,8 @@ $("#quick-new-expense").addEventListener("click", openExpenseDialog);
 $("#close-dialog").addEventListener("click", () => $("#expense-dialog").close());
 $("#expense-form").addEventListener("submit", submitExpense);
 $("#parse-receipt-button").addEventListener("click", parseReceipt);
-$("#receipt-image").addEventListener("change", readReceiptImage);
+$("#receipt-gallery").addEventListener("change", readReceiptImage);
+$("#receipt-camera").addEventListener("change", readReceiptImage);
 $("#ocr-receipt-button").addEventListener("click", ocrReceipt);
 $("#policy-form").addEventListener("submit", createPolicy);
 $("#user-form").addEventListener("submit", createUser);

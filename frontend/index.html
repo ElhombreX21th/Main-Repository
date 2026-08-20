@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="/static/styles.css?v=20260820-layout" />
+    <link rel="stylesheet" href="/static/styles.css?v=20260820-gallery" />
   </head>
   <body>
     <div id="app" class="app-shell">
@@ -34,7 +34,7 @@
             <button class="tab-button" data-auth-mode="register" type="button">Criar conta</button>
           </div>
           <form id="auth-form" class="stack-form">
-            <label id="name-field" class="field hidden">Nome completo<input name="full_name" type="text" placeholder="Ex.: nome completo" /></label>
+            <label id="name-field" class="field hidden">Nome completo<input name="full_name" type="text" placeholder="Digite seu nome completo" /></label>
             <label id="organization-field" class="field hidden">Organização<input name="organization_name" type="text" placeholder="Ex.: Acme Brasil" /></label>
             <label class="field">E-mail<input name="email" type="email" placeholder="voce@empresa.com" required /></label>
             <label class="field">Senha<input name="password" type="password" placeholder="Mínimo de 10 caracteres" minlength="10" required /></label>
@@ -82,7 +82,7 @@
 
           <section id="policies-view" class="view-panel hidden"><div class="section-heading page-section-heading"><div><span class="eyebrow">REGRAS DA EMPRESA</span><h2>Políticas de reembolso</h2></div></div><div class="policy-layout"><form id="policy-form" class="form-card"><span class="eyebrow">NOVA POLÍTICA</span><h3>Defina limites por categoria.</h3><label class="field">Categoria<input name="category" type="text" placeholder="Ex.: alimentação" required /></label><div class="two-fields"><label class="field">Moeda<input name="currency" value="BRL" maxlength="3" required /></label><label class="field">Limite máximo<input name="max_amount" type="number" min="0.01" step="0.01" placeholder="150,00" required /></label></div><button class="primary-button" type="submit">Salvar política <span class="button-arrow">↗</span></button><p id="policy-feedback" class="feedback"></p></form><div id="policies-list" class="policy-list"><div class="empty-state">Carregando políticas...</div></div></div></section>
 
-          <section id="team-view" class="view-panel hidden"><div class="section-heading page-section-heading"><div><span class="eyebrow">ACESSOS DA EMPRESA</span><h2>Equipe e papéis</h2></div></div><div class="policy-layout"><form id="user-form" class="form-card"><span class="eyebrow">NOVO USUÁRIO</span><h3>Cadastre pessoas e defina o papel de acesso.</h3><label class="field">Nome completo<input name="full_name" type="text" placeholder="Ex.: Carla Souza" required /></label><label class="field">E-mail<input name="email" type="email" placeholder="pessoa@empresa.com" required /></label><label class="field">Senha provisória<input name="password" type="password" minlength="10" placeholder="Mínimo de 10 caracteres" required /></label><label class="field">Papel<select name="role" required><option value="employee">Funcionário</option><option value="approver">Aprovador</option><option value="admin">Administrador</option></select></label><button class="primary-button" type="submit">Criar usuário <span class="button-arrow">↗</span></button><p id="user-feedback" class="feedback"></p></form><div id="users-list" class="policy-list"><div class="empty-state">Carregando equipe...</div></div></div></section>
+          <section id="team-view" class="view-panel hidden"><div class="section-heading page-section-heading"><div><span class="eyebrow">ACESSOS DA EMPRESA</span><h2>Equipe e papéis</h2></div></div><div class="policy-layout"><form id="user-form" class="form-card"><span class="eyebrow">NOVO USUÁRIO</span><h3>Cadastre pessoas e defina o papel de acesso.</h3><label class="field">Nome completo<input name="full_name" type="text" placeholder="Digite o nome completo" required /></label><label class="field">E-mail<input name="email" type="email" placeholder="pessoa@empresa.com" required /></label><label class="field">Senha provisória<input name="password" type="password" minlength="10" placeholder="Mínimo de 10 caracteres" required /></label><label class="field">Papel<select name="role" required><option value="employee">Funcionário</option><option value="approver">Aprovador</option><option value="admin">Administrador</option></select></label><button class="primary-button" type="submit">Criar usuário <span class="button-arrow">↗</span></button><p id="user-feedback" class="feedback"></p></form><div id="users-list" class="policy-list"><div class="empty-state">Carregando equipe...</div></div></div></section>
         </main>
       </section>
     </div>
@@ -90,7 +90,7 @@
     <dialog id="expense-dialog" class="expense-dialog">
       <div class="dialog-header"><div><span class="eyebrow">NOVA DESPESA</span><h2>Adicionar despesa</h2></div><button id="close-dialog" class="icon-button" type="button" aria-label="Fechar">×</button></div>
       <form id="expense-form" class="stack-form">
-        <div class="receipt-capture"><div><span class="eyebrow">1 / CAPTURA</span><h3>Anexe ou fotografe o recibo</h3><p>Use a câmera do celular ou escolha uma imagem da galeria.</p></div><label class="capture-button"><input id="receipt-image" type="file" accept="image/*" capture="environment" /> <span class="capture-icon">⌁</span> Escolher foto <span>↗</span></label><img id="receipt-preview" class="receipt-preview hidden" alt="Prévia do recibo" /><button id="ocr-receipt-button" class="outline-button hidden" type="button">Ler dados da foto <span>↗</span></button></div>
+        <div class="receipt-capture"><div><span class="eyebrow">1 / CAPTURA</span><h3>Anexe ou fotografe o recibo</h3><p>Use a câmera do celular ou escolha uma imagem da galeria.</p></div><div class="capture-actions"><label class="capture-button"><input id="receipt-gallery" type="file" accept="image/*" /> <span class="capture-icon">⌁</span> Galeria <span>↗</span></label><label class="capture-button"><input id="receipt-camera" type="file" accept="image/*" capture="environment" /> <span class="capture-icon">⌁</span> Câmera <span>↗</span></label></div><img id="receipt-preview" class="receipt-preview hidden" alt="Prévia do recibo" /><button id="ocr-receipt-button" class="outline-button hidden" type="button">Ler dados da foto <span>↗</span></button></div>
         <div class="form-step-label"><span class="eyebrow">2 / REVISÃO</span><small>Confira os dados antes de enviar.</small></div>
         <div class="two-fields"><label class="field">Finalidade<select name="category" required><option value="">Selecione uma finalidade</option><option value="breakfast">Café da manhã</option><option value="lunch">Almoço</option><option value="dinner">Jantar</option><option value="transport">Transporte</option><option value="lodging">Hospedagem</option><option value="other">Outra finalidade</option></select></label><label class="field">Valor<input name="amount" type="number" min="0.01" step="0.01" placeholder="89,90" required /></label></div>
         <div class="two-fields"><label class="field">Data<input name="expense_date" type="date" required /></label><label class="field">Moeda<select name="currency"><option>BRL</option><option>USD</option><option>EUR</option></select></label></div>
@@ -100,6 +100,6 @@
         <div class="form-step-label"><span class="eyebrow">3 / ENVIO</span><small>A despesa será salva como rascunho para revisão.</small></div><p id="expense-feedback" class="feedback"></p><button class="primary-button" type="submit">Registrar despesa <span class="button-arrow">↗</span></button>
       </form>
     </dialog>
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script><script src="/static/app.js?v=20260820-layout"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script><script src="/static/app.js?v=20260820-gallery"></script>
   </body>
 </html>
