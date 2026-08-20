@@ -15,8 +15,12 @@ def normalized(value: str | None) -> str | None:
 
 def create_expense(db: Session, actor: User, data: ExpenseCreate) -> Expense:
     values = data.model_dump()
+    values["category"] = data.category.strip()
     values["merchant_tax_id"] = normalized(data.merchant_tax_id)
+    values["merchant_state"] = data.merchant_state.upper() if data.merchant_state else None
     values["invoice_key"] = normalized(data.invoice_key)
+    values["currency"] = data.currency.upper()
+    values["country_code"] = data.country_code.upper()
     duplicate_terms = []
     if values["invoice_key"]:
         duplicate_terms.append(Expense.invoice_key == values["invoice_key"])
@@ -33,24 +37,22 @@ def create_expense(db: Session, actor: User, data: ExpenseCreate) -> Expense:
             Expense.organization_id == actor.organization_id, or_(*duplicate_terms)
         )
     ):
-        raise HTTPException(status.HTTP_409_CONFLICT, "Despesa duplicada")
+        raise HTTPException(status.HTTP_409_CONFLICT, "Esta despesa já foi registrada.")
 
     policy = db.scalar(
         select(Policy).where(
             Policy.organization_id == actor.organization_id,
-            Policy.category == data.category,
-            Policy.country_code == data.country_code.upper(),
+            Policy.category == values["category"],
+            Policy.country_code == values["country_code"],
         )
     )
     violation = None
-    if policy and (policy.currency != data.currency.upper() or data.amount > policy.max_amount):
+    if policy and (policy.currency != values["currency"] or data.amount > policy.max_amount):
         violation = f"Limite: {policy.currency} {policy.max_amount}"
     expense = Expense(
         **values,
         organization_id=actor.organization_id,
         user_id=actor.id,
-        currency=data.currency.upper(),
-        country_code=data.country_code.upper(),
         policy_violation=violation,
     )
     db.add(expense)
@@ -72,7 +74,7 @@ TRANSITIONS = {
 def transition(db: Session, actor: User, expense: Expense, action: str) -> Expense:
     allowed, target = TRANSITIONS[action]
     if expense.status not in allowed:
-        raise HTTPException(status.HTTP_409_CONFLICT, "Transição de status inválida")
+        raise HTTPException(status.HTTP_409_CONFLICT, "A mudança de status não é permitida.")
     expense.status = target
     audit(db, actor, "expense", expense.id, action)
     db.commit()

@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "simulate:receipts": "node scripts/simulate_receipt_cycles.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.55.0"
+  }
+}

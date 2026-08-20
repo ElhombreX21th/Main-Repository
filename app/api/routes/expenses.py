@@ -41,7 +41,7 @@ def tenant_expense(expense_id: uuid.UUID, user: User, db: Session) -> Expense:
         )
     )
     if not expense:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Despesa não encontrada")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Despesa não encontrada.")
     return expense
 
 
@@ -51,7 +51,10 @@ def submit(
 ):
     expense = tenant_expense(expense_id, user, db)
     if expense.user_id != user.id and user.role != UserRole.admin:
-        raise HTTPException(status.HTTP_403_FORBIDDEN, "Apenas o proprietário pode enviar")
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            "Apenas o responsável pela despesa pode enviá-la.",
+        )
     return transition(db, user, expense, "submit")
 
 

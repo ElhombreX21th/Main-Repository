@@ -1,6 +1,6 @@
 import enum
 import uuid
-from datetime import date, datetime
+from datetime import date, datetime, time
 from decimal import Decimal
 
 from sqlalchemy import (
@@ -11,6 +11,7 @@ from sqlalchemy import (
     Numeric,
     String,
     Text,
+    Time,
     UniqueConstraint,
     func,
 )
@@ -44,6 +45,7 @@ class User(Base):
     __tablename__ = "users"
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     organization_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("organizations.id"), index=True)
+    full_name: Mapped[str | None] = mapped_column(String(160), nullable=True)
     email: Mapped[str] = mapped_column(String(320), unique=True, index=True)
     password_hash: Mapped[str] = mapped_column(String(255))
     role: Mapped[UserRole] = mapped_column(Enum(UserRole), default=UserRole.employee)
@@ -62,7 +64,10 @@ class Expense(Base):
     amount: Mapped[Decimal] = mapped_column(Numeric(14, 2))
     currency: Mapped[str] = mapped_column(String(3), default="BRL")
     expense_date: Mapped[date] = mapped_column(Date)
+    expense_time: Mapped[time | None] = mapped_column(Time, nullable=True)
     merchant_tax_id: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    merchant_city: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    merchant_state: Mapped[str | None] = mapped_column(String(2), nullable=True)
     invoice_key: Mapped[str | None] = mapped_column(String(64), nullable=True)
     country_code: Mapped[str] = mapped_column(String(2), default="BR")
     description: Mapped[str | None] = mapped_column(Text, nullable=True)

@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f5f1e8" />
+    <title>ReembolsaBR | Controle de despesas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/static/styles.css?v=20260820-ocr" />
+  </head>
+  <body>
+    <div id="app" class="app-shell">
+      <section id="auth-screen" class="auth-screen">
+        <div class="auth-art" aria-hidden="true">
+          <div class="art-grid"></div>
+          <div class="art-copy">
+            <span class="eyebrow">REEMBOLSABR / 01</span>
+            <h1>Despesas organizadas,<br /><em>reembolso simples.</em></h1>
+            <p>Acompanhe recibos, políticas e aprovações em um só lugar.</p>
+          </div>
+          <div class="art-stamp">BR<br /><span>2026</span></div>
+        </div>
+        <div class="auth-panel">
+          <div class="brand-mark"><span>R</span> reembolsa<span class="brand-accent">br</span></div>
+          <div class="auth-heading">
+            <span class="eyebrow">ACESSO</span>
+            <h2 id="auth-title">Acesse sua conta</h2>
+            <p id="auth-subtitle">Entre para acompanhar suas despesas.</p>
+          </div>
+          <div class="auth-tabs" role="tablist">
+            <button class="tab-button is-active" data-auth-mode="login" type="button">Entrar</button>
+            <button class="tab-button" data-auth-mode="register" type="button">Criar conta</button>
+          </div>
+          <form id="auth-form" class="stack-form">
+            <label id="name-field" class="field hidden">Nome completo<input name="full_name" type="text" placeholder="Digite seu nome completo" /></label>
+            <label id="organization-field" class="field hidden">Organização<input name="organization_name" type="text" placeholder="Ex.: Acme Brasil" /></label>
+            <label class="field">E-mail<input name="email" type="email" placeholder="voce@empresa.com" required /></label>
+            <label class="field">Senha<input name="password" type="password" placeholder="Mínimo de 10 caracteres" minlength="10" required /></label>
+            <button class="primary-button" type="submit"><span id="auth-submit-label">Entrar no painel</span><span class="button-arrow">↗</span></button>
+          </form>
+          <p id="auth-feedback" class="feedback" role="alert"></p>
+          <p class="auth-note">Registre despesas, revise recibos e acompanhe o reembolso com segurança.</p>
+        </div>
+      </section>
+
+      <section id="dashboard-screen" class="dashboard-screen hidden">
+        <aside class="sidebar">
+          <div class="brand-mark"><span>R</span> reembolsa<span class="brand-accent">br</span></div>
+          <div class="sidebar-rule"></div>
+          <nav class="main-nav" aria-label="Navegação principal">
+            <button class="nav-item is-active" data-view="overview" type="button"><span class="nav-icon">▦</span> Visão geral</button>
+            <button class="nav-item" data-view="expenses" type="button"><span class="nav-icon">↗</span> Despesas</button>
+            <button class="nav-item" data-view="policies" type="button"><span class="nav-icon">◫</span> Políticas</button>
+            <button id="team-nav" class="nav-item hidden" data-view="team" type="button"><span class="nav-icon">◇</span> Equipe</button>
+          </nav>
+          <div class="sidebar-bottom">
+            <div class="sidebar-tip"><span class="tip-dot"></span><strong>Sistema pronto</strong><small>Acompanhe cada etapa pelo painel.</small></div>
+            <button id="logout-button" class="logout-button" type="button">Sair <span>→</span></button>
+          </div>
+        </aside>
+
+        <main class="main-content">
+          <header class="topbar">
+            <div><span id="topbar-date" class="eyebrow"></span><h1 id="page-title">Visão geral</h1></div>
+            <div class="topbar-actions"><button id="new-expense-button" class="primary-button compact" type="button">Nova despesa <span class="button-arrow">↗</span></button><div class="avatar">RB</div></div>
+          </header>
+
+          <div id="global-feedback" class="feedback"></div>
+          <section id="overview-view" class="view-panel">
+            <div class="welcome-row"><div><p class="lead">Olá, <strong id="user-name">você</strong>.</p><p class="muted">Acompanhe seus lançamentos e o andamento de cada reembolso.</p></div><span id="period-label" class="date-chip"></span></div>
+            <div class="metric-grid">
+              <article class="metric-card metric-primary"><span class="metric-label">TOTAL SOLICITADO</span><strong id="metric-total">R$ 0,00</strong><span class="metric-foot">Todas as despesas</span></article>
+              <article class="metric-card"><span class="metric-label">EM ANÁLISE</span><strong id="metric-pending">0</strong><span class="metric-foot">Aguardando aprovação</span></article>
+              <article class="metric-card"><span class="metric-label">APROVADAS</span><strong id="metric-approved">0</strong><span class="metric-foot">Prontas para reembolso</span></article>
+            </div>
+            <div class="content-grid"><section class="content-section"><div class="section-heading"><div><span class="eyebrow">ATIVIDADE RECENTE</span><h2>Suas despesas</h2></div><button class="text-button" data-view-target="expenses" type="button">Ver todas →</button></div><div id="recent-expenses" class="expense-list"><div class="empty-state">Carregando suas despesas...</div></div></section><aside class="quick-panel"><span class="eyebrow">ATALHO</span><h2>Tem um recibo para registrar?</h2><p>Cole o texto fiscal ou envie uma foto para preencher os principais dados.</p><button id="quick-new-expense" class="outline-button" type="button">Adicionar recibo <span>↗</span></button></aside></div>
+          </section>
+
+          <section id="expenses-view" class="view-panel hidden"><div class="section-heading page-section-heading"><div><span class="eyebrow">CENTRAL DE DESPESAS</span><h2>Todas as despesas</h2></div><button id="list-new-expense" class="primary-button compact" type="button">Nova despesa <span class="button-arrow">↗</span></button></div><div id="all-expenses" class="table-wrap"></div></section>
+
+          <section id="policies-view" class="view-panel hidden"><div class="section-heading page-section-heading"><div><span class="eyebrow">REGRAS DA EMPRESA</span><h2>Políticas de reembolso</h2></div></div><div class="policy-layout"><form id="policy-form" class="form-card"><span class="eyebrow">NOVA POLÍTICA</span><h3>Defina limites por categoria.</h3><label class="field">Categoria<input name="category" type="text" placeholder="Ex.: alimentação" required /></label><div class="two-fields"><label class="field">Moeda<input name="currency" value="BRL" maxlength="3" required /></label><label class="field">Limite máximo<input name="max_amount" type="number" min="0.01" step="0.01" placeholder="150,00" required /></label></div><button class="primary-button" type="submit">Salvar política <span class="button-arrow">↗</span></button><p id="policy-feedback" class="feedback"></p></form><div id="policies-list" class="policy-list"><div class="empty-state">Carregando políticas...</div></div></div></section>
+
+          <section id="team-view" class="view-panel hidden"><div class="section-heading page-section-heading"><div><span class="eyebrow">ACESSOS DA EMPRESA</span><h2>Equipe e papéis</h2></div></div><div class="policy-layout"><form id="user-form" class="form-card"><span class="eyebrow">NOVO USUÁRIO</span><h3>Cadastre pessoas e defina o papel de acesso.</h3><label class="field">Nome completo<input name="full_name" type="text" placeholder="Digite o nome completo" required /></label><label class="field">E-mail<input name="email" type="email" placeholder="pessoa@empresa.com" required /></label><label class="field">Senha provisória<input name="password" type="password" minlength="10" placeholder="Mínimo de 10 caracteres" required /></label><label class="field">Papel<select name="role" required><option value="employee">Funcionário</option><option value="approver">Aprovador</option><option value="admin">Administrador</option></select></label><button class="primary-button" type="submit">Criar usuário <span class="button-arrow">↗</span></button><p id="user-feedback" class="feedback"></p></form><div id="users-list" class="policy-list"><div class="empty-state">Carregando equipe...</div></div></div></section>
+        </main>
+      </section>
+    </div>
+
+    <dialog id="expense-dialog" class="expense-dialog">
+      <div class="dialog-header"><div><span class="eyebrow">NOVA DESPESA</span><h2>Adicionar despesa</h2></div><button id="close-dialog" class="icon-button" type="button" aria-label="Fechar">×</button></div>
+      <form id="expense-form" class="stack-form">
+        <div class="receipt-capture"><div><span class="eyebrow">1 / CAPTURA</span><h3>Anexe ou fotografe o recibo</h3><p>Use a câmera do celular ou escolha uma imagem da galeria.</p></div><div class="capture-actions"><label class="capture-button"><input id="receipt-gallery" type="file" accept="image/*" /> <span class="capture-icon">⌁</span> Galeria <span>↗</span></label><label class="capture-button"><input id="receipt-camera" type="file" accept="image/*" capture="environment" /> <span class="capture-icon">⌁</span> Câmera <span>↗</span></label></div><img id="receipt-preview" class="receipt-preview hidden" alt="Prévia do recibo" /><button id="ocr-receipt-button" class="outline-button hidden" type="button">Ler dados da foto <span>↗</span></button></div>
+        <div class="form-step-label"><span class="eyebrow">2 / REVISÃO</span><small>Confira os dados antes de enviar.</small></div>
+        <div class="two-fields"><label class="field">Finalidade<select name="category" required><option value="">Selecione uma finalidade</option><option value="breakfast">Café da manhã</option><option value="lunch">Almoço</option><option value="dinner">Jantar</option><option value="transport">Transporte</option><option value="lodging">Hospedagem</option><option value="other">Outra finalidade</option></select></label><label class="field">Valor<input name="amount" type="number" min="0.01" step="0.01" placeholder="89,90" required /></label></div>
+        <div class="two-fields"><label class="field">Data<input name="expense_date" type="date" required /></label><label class="field">Hora<input name="expense_time" type="time" step="1" /></label></div>
+        <label class="field">Moeda<select name="currency"><option>BRL</option><option>USD</option><option>EUR</option></select></label>
+        <div class="two-fields"><label class="field">Cidade<input name="merchant_city" type="text" placeholder="Ex.: São Paulo" /></label><label class="field">Estado / UF<select name="merchant_state"><option value="">Selecione</option><option>AC</option><option>AL</option><option>AM</option><option>AP</option><option>BA</option><option>CE</option><option>DF</option><option>ES</option><option>GO</option><option>MA</option><option>MG</option><option>MS</option><option>MT</option><option>PA</option><option>PB</option><option>PE</option><option>PI</option><option>PR</option><option>RJ</option><option>RN</option><option>RO</option><option>RR</option><option>RS</option><option>SC</option><option>SE</option><option>SP</option><option>TO</option></select></label></div>
+        <label class="field">Estabelecimento / CNPJ<input name="merchant_tax_id" type="text" placeholder="Opcional" /></label><label class="field">Chave da nota fiscal<input name="invoice_key" type="text" placeholder="Opcional" /></label><label class="field">Descrição<textarea name="description" rows="2" placeholder="Ex.: almoço com cliente"></textarea></label>
+        <div class="receipt-helper"><div><strong>Cole o texto fiscal</strong><small>Use esta opção quando o texto do recibo já estiver disponível.</small></div><textarea id="receipt-text" rows="2" placeholder="Cole aqui o texto do recibo..."></textarea><button id="parse-receipt-button" class="outline-button" type="button">Preencher dados <span>↗</span></button></div>
+        <div class="form-step-label"><span class="eyebrow">3 / ENVIO</span><small>A despesa será salva como rascunho para revisão.</small></div><p id="expense-feedback" class="feedback"></p><button class="primary-button" type="submit">Registrar despesa <span class="button-arrow">↗</span></button>
+      </form>
+    </dialog>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script><script src="/static/app.js?v=20260820-ocr"></script>
+  </body>
+</html>
