@@ -1,12 +1,19 @@
+import os
 from functools import lru_cache
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+def default_database_url() -> str:
+    if os.getenv("VERCEL"):
+        return "sqlite:////tmp/reembolsabr.db"
+    return "sqlite:///./reembolso.db"
+
+
 class Settings(BaseSettings):
     app_name: str = "ReembolsaBR API"
     api_prefix: str = "/api/v1"
-    database_url: str = "sqlite:///./reembolso.db"
+    database_url: str = default_database_url()
     redis_url: str = "redis://localhost:6379/0"
     secret_key: str = "development-secret-change-in-production"
     access_token_expire_minutes: int = 60

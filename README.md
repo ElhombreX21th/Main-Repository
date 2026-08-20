@@ -2,6 +2,11 @@
 
 Backend SaaS multiempresa para submissão, validação e aprovação de despesas corporativas. O domínio começa com documentos brasileiros, sem fixar país ou moeda na arquitetura.
 
+## Publicação online
+
+- Produção: https://reembolsabr.vercel.app
+- Health check: https://reembolsabr.vercel.app/health
+
 ## Recursos
 
 - FastAPI, Pydantic v2 e SQLAlchemy 2 com PostgreSQL;

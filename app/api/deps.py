@@ -18,17 +18,17 @@ def current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_
     try:
         user_id = uuid.UUID(decode_access_token(token))
     except (jwt.InvalidTokenError, ValueError) as exc:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Token inválido") from exc
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Token inválido.") from exc
     user = db.get(User, user_id)
     if not user or not user.is_active:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Usuário inválido")
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Usuário não encontrado ou inativo.")
     return user
 
 
 def require_roles(*roles: UserRole) -> Callable:
     def dependency(user: User = Depends(current_user)) -> User:
         if user.role not in roles:
-            raise HTTPException(status.HTTP_403_FORBIDDEN, "Papel insuficiente")
+            raise HTTPException(status.HTTP_403_FORBIDDEN, "Você não tem permissão para esta ação.")
         return user
 
     return dependency
