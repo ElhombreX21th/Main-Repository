@@ -3,7 +3,12 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.core.security import create_access_token, hash_password, verify_password
+from app.core.security import (
+    DUMMY_PASSWORD_HASH,
+    create_access_token,
+    hash_password,
+    verify_password,
+)
 from app.db.session import get_db
 from app.models.entities import Organization, User, UserRole
 from app.schemas.auth import RegisterRequest, Token
@@ -32,6 +37,8 @@ def register(data: RegisterRequest, db: Session = Depends(get_db)):
 @router.post("/token", response_model=Token)
 def token(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = db.scalar(select(User).where(User.email == form.username.lower()))
-    if not user or not verify_password(form.password, user.password_hash):
+    candidate_hash = user.password_hash if user else DUMMY_PASSWORD_HASH
+    password_valid = verify_password(form.password, candidate_hash)
+    if not user or not password_valid or not user.is_active:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Credenciais inválidas")
     return Token(access_token=create_access_token(str(user.id)))

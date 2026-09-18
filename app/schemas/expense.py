@@ -28,7 +28,8 @@ class ExpenseRead(ExpenseCreate):
 
 
 class ReceiptText(BaseModel):
-    text: str = Field(min_length=1)
+    # OCR payloads are processed synchronously; cap them to prevent memory/CPU abuse.
+    text: str = Field(min_length=1, max_length=100_000)
 
 
 class ParsedReceipt(BaseModel):

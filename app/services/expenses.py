@@ -70,6 +70,11 @@ TRANSITIONS = {
 
 
 def transition(db: Session, actor: User, expense: Expense, action: str) -> Expense:
+    if action in {"approve", "reject", "reimburse"} and expense.user_id == actor.id:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            "Segregação de funções impede atuar na própria despesa",
+        )
     allowed, target = TRANSITIONS[action]
     if expense.status not in allowed:
         raise HTTPException(status.HTTP_409_CONFLICT, "Transição de status inválida")

@@ -38,7 +38,7 @@ def tenant_expense(expense_id: uuid.UUID, user: User, db: Session) -> Expense:
     expense = db.scalar(
         select(Expense).where(
             Expense.id == expense_id, Expense.organization_id == user.organization_id
-        )
+        ).with_for_update()
     )
     if not expense:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Despesa não encontrada")
