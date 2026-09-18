@@ -32,7 +32,9 @@ Toda entidade de negócio carrega `organization_id`. Valores usam `Numeric`, dat
 
 ## Execução com Docker
 
-1. Copie a configuração: `cp .env.example .env` (troque `SECRET_KEY` em produção).
+1. Copie a configuração: `cp .env.example .env` e gere `SECRET_KEY` com
+   `python -c 'import secrets; print(secrets.token_urlsafe(48))'`. A aplicação recusa
+   segredos curtos ou os valores públicos de exemplo.
 2. Suba e migre: `docker compose up --build -d`.
 3. Abra Swagger em http://localhost:8000/docs e health check em http://localhost:8000/health.
 
@@ -64,7 +66,9 @@ curl -X POST localhost:8000/api/v1/expenses -H "Authorization: Bearer $TOKEN" -H
   -d '{"category":"meals","amount":89.90,"currency":"BRL","expense_date":"2026-08-14","merchant_tax_id":"12.345.678/0001-90","invoice_key":"12345678901234567890123456789012345678901234","country_code":"BR"}'
 ```
 
-Use `POST /expenses/{id}/submit`; aprovadores/admins usam `/approve`, `/reject` e `/reimburse`. Consulte `/audit-logs` (admin). O endpoint `/expenses/parse-receipt` demonstra o parser; em produção, OCR deve produzir o texto antes desta etapa.
+Use `POST /expenses/{id}/submit`; aprovadores/admins usam `/approve`, `/reject` e `/reimburse`,
+mas nunca na própria despesa (segregação de funções). Consulte `/audit-logs` (admin). O endpoint
+`/expenses/parse-receipt` demonstra o parser; em produção, OCR deve produzir o texto antes desta etapa.
 
 ## Desenvolvimento local
 
@@ -87,7 +91,7 @@ ruff check .
 
 ## Segurança e próximos passos
 
-O registro é um bootstrap propositalmente simples; desabilite-o ou proteja-o por convite após criar o primeiro tenant. Use segredo gerenciado, TLS, rotação/revogação de tokens, rate limiting e storage privado de comprovantes em produção. Evoluções naturais incluem OCR, integração bancária/ERP, LGPD (retenção e anonimização), refresh tokens, SSO/MFA, alçadas de aprovação e regras tributárias por país.
+O registro é um bootstrap propositalmente simples; desabilite-o ou proteja-o por convite após criar o primeiro tenant. Use segredo gerenciado e persistente, TLS, rotação/revogação de tokens, rate limiting compartilhado entre instâncias e storage privado de comprovantes em produção. Os JWTs possuem emissor, audiência, finalidade, identificador único e janela temporal validados. Evoluções naturais incluem OCR, integração bancária/ERP, LGPD (retenção e anonimização), refresh tokens, SSO/MFA, alçadas de aprovação e regras tributárias por país.
 
 ## API
 
