@@ -31,7 +31,7 @@ class ExpenseRead(ExpenseCreate):
 
 
 class ReceiptText(BaseModel):
-    text: str = Field(min_length=1)
+    text: str = Field(min_length=1, max_length=20000)
 
 
 class ParsedReceipt(BaseModel):
@@ -42,3 +42,6 @@ class ParsedReceipt(BaseModel):
     expense_date: date | None
     expense_time: time | None
     amount: Decimal | None
+    merchant_name: str | None = None
+    category: str | None = None
+    description: str | None = None

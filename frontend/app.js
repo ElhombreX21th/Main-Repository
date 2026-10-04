@@ -302,6 +302,8 @@ async function parseReceipt() {
     fillField("merchant_city", parsed.merchant_city, "cidade");
     fillField("merchant_state", parsed.merchant_state, "UF");
     fillField("invoice_key", parsed.invoice_key, "chave fiscal");
+    fillField("category", parsed.category, "finalidade");
+    if (parsed.description && !form.elements.description.value) fillField("description", parsed.description, "descrição");
     if (!filled.length) {
       setFeedback("#expense-feedback", "Não encontrei dados suficientes no recibo. Verifique a foto ou preencha os campos manualmente.");
       return { parsed, filled };
@@ -327,7 +329,8 @@ async function readReceiptImage(event) {
   preview.src = state.receiptPreviewUrl;
   preview.classList.remove("hidden");
   $("#ocr-receipt-button").classList.remove("hidden");
-  setFeedback("#expense-feedback", "Foto adicionada. Confira o enquadramento antes de ler os dados.", true);
+  setFeedback("#expense-feedback", "Foto adicionada. Lendo os dados automaticamente...", true);
+  await ocrReceipt();
 }
 
 function loadReceiptBitmap(file) {

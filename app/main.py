@@ -34,6 +34,16 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(title=settings.app_name, version="0.1.0", lifespan=lifespan)
+
+
+@app.middleware("http")
+async def security_headers(request, call_next):
+    response = await call_next(request)
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "no-referrer")
+    response.headers.setdefault("Permissions-Policy", "camera=(self), geolocation=()")
+    return response
 for router in (auth.router, expenses.router, policies.router, audit.router):
     app.include_router(router, prefix=settings.api_prefix)
 

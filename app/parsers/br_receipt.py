@@ -147,12 +147,46 @@ def parse_city_state(text: str) -> tuple[str | None, str | None]:
     return city_value, state_value
 
 
+def parse_merchant_name(text: str) -> str | None:
+    for raw in text.splitlines():
+        line = " ".join(raw.split())
+        if len(line) < 3:
+            continue
+        plain = without_accents(line).lower()
+        if CNPJ_RE.search(line) or DATE_RE.search(line) or "cnpj" in plain:
+            continue
+        if re.match(r"^(nfc|danfe|cupom|documento|total|valor)", plain):
+            continue
+        if MERCHANT_HINTS_RE.search(plain) or raw is not None:
+            return line[:120]
+    return None
+
+
+def guess_category(name: str | None, time_value) -> str | None:
+    plain = without_accents(name or "").lower()
+    if re.search(r"posto|combustivel|taxi|uber|estacionamento|pedagio", plain):
+        return "transport"
+    if re.search(r"hotel|pousada|hostel", plain):
+        return "lodging"
+    if re.search(r"padaria|cafe|confeitaria", plain):
+        return "breakfast"
+    if re.search(r"restaurante|lanchonete|grill|bar |churrasc|mercado|pizzaria", plain):
+        if time_value is not None:
+            if time_value.hour < 11:
+                return "breakfast"
+            if time_value.hour >= 18:
+                return "dinner"
+        return "lunch"
+    return "other" if name else None
+
+
 def parse_br_receipt(text: str) -> dict:
     normalized_text = searchable_text(text)
     datetime_match = DATETIME_RE.search(normalized_text)
     date_match = datetime_match or DATE_RE.search(normalized_text)
     time_value = parse_datetime_time(datetime_match) or parse_time(TIME_RE.search(normalized_text))
     city, state = parse_city_state(normalized_text)
+    merchant = parse_merchant_name(text)
     return {
         "merchant_tax_id": parse_cnpj(normalized_text),
         "merchant_city": city,
@@ -161,4 +195,7 @@ def parse_br_receipt(text: str) -> dict:
         "expense_date": parse_date(date_match),
         "expense_time": time_value,
         "amount": parse_amount(normalized_text),
+        "merchant_name": merchant,
+        "category": guess_category(merchant, time_value),
+        "description": f"{merchant} - NFC-e" if merchant else None,
     }

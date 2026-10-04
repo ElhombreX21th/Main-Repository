@@ -1,4 +1,4 @@
-from datetime import date, time
+﻿from datetime import date, time
 from decimal import Decimal
 
 from app.parsers.br_receipt import parse_br_receipt
@@ -19,6 +19,9 @@ def test_parse_brazilian_receipt():
         "expense_date": date(2026, 8, 14),
         "expense_time": None,
         "amount": Decimal("1234.56"),
+        "merchant_name": None,
+        "category": None,
+        "description": None,
     }
 
 
@@ -42,6 +45,9 @@ def test_parse_receipt_with_datetime_and_nfce_key():
         "expense_date": date(2026, 8, 20),
         "expense_time": time(14, 35, 9),
         "amount": Decimal("61.11"),
+        "merchant_name": "EMPRESA EXEMPLO LTDA",
+        "category": "other",
+        "description": "EMPRESA EXEMPLO LTDA - NFC-e",
     }
 
 
@@ -50,3 +56,4 @@ def test_parser_accepts_partial_text():
     assert result["amount"] is None
     assert result["merchant_city"] is None
     assert result["expense_time"] is None
+

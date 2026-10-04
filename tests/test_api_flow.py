@@ -224,3 +224,13 @@ def test_expense_lifecycle_audit_and_tenant_isolation(client: TestClient):
         "/api/v1/expenses", headers=other_headers, json=expense_payload
     )
     assert other_expense_response.status_code == 201, other_expense_response.text
+
+
+def test_security_headers_and_bad_login(client: TestClient):
+    response = client.get('/health')
+    assert response.headers['x-content-type-options'] == 'nosniff'
+    assert response.headers['x-frame-options'] == 'DENY'
+    creds = {'username': 'x@example.com', 'password': 'errada-errada'}
+    bad = client.post('/api/v1/auth/token', data=creds)
+    assert bad.status_code == 401
+
