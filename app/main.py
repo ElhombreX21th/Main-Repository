@@ -42,7 +42,15 @@ async def security_headers(request, call_next):
     response.headers.setdefault("X-Content-Type-Options", "nosniff")
     response.headers.setdefault("X-Frame-Options", "DENY")
     response.headers.setdefault("Referrer-Policy", "no-referrer")
-    response.headers.setdefault("Permissions-Policy", "camera=(self), geolocation=()")
+    response.headers.setdefault(
+        "Permissions-Policy", "camera=(self), microphone=(), geolocation=()"
+    )
+    if request.url.path.startswith(f"{settings.api_prefix}/auth") or request.headers.get(
+        "authorization"
+    ):
+        response.headers["Cache-Control"] = "no-store"
+    if request.url.scheme == "https":
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
     return response
 for router in (auth.router, expenses.router, policies.router, audit.router):
     app.include_router(router, prefix=settings.api_prefix)
