@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "simulate:receipts": "node scripts/simulate_receipt_cycles.mjs",
+    "simulate:scan": "node scripts/simulate_receipt_scan.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.55.0"
+  }
+}

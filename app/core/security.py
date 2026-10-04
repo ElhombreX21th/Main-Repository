@@ -3,6 +3,7 @@ from datetime import UTC, datetime, timedelta
 
 import jwt
 from pwdlib import PasswordHash
+from pwdlib.exceptions import UnknownHashError
 
 from app.core.config import settings
 
@@ -19,7 +20,7 @@ def hash_password(password: str) -> str:
 def verify_password(password: str, hashed: str) -> bool:
     try:
         return password_hash.verify(password, hashed)
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, UnknownHashError):
         # Invalid legacy/corrupt hashes must behave like a failed login rather than
         # exposing an internal error.
         return False

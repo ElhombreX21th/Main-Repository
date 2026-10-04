@@ -1,30 +1,57 @@
+from contextlib import asynccontextmanager
+from pathlib import Path
+
 from fastapi import FastAPI
-from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.requests import Request
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+from sqlalchemy import inspect, text
 
 from app.api.routes import audit, auth, expenses, policies
 from app.core.config import settings
-
-app = FastAPI(title=settings.app_name, version="0.1.0")
-
-
-class SecurityHeadersMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        response = await call_next(request)
-        response.headers["X-Content-Type-Options"] = "nosniff"
-        response.headers["X-Frame-Options"] = "DENY"
-        response.headers["Referrer-Policy"] = "no-referrer"
-        response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
-        if request.url.path.startswith(f"{settings.api_prefix}/auth") or request.headers.get(
-            "authorization"
-        ):
-            response.headers["Cache-Control"] = "no-store"
-        if request.url.scheme == "https":
-            response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
-        return response
+from app.db.base import Base
+from app.db.session import engine
+from app.services.seed import seed_admin_user
 
 
-app.add_middleware(SecurityHeadersMiddleware)
+def ensure_sqlite_schema():
+    inspector = inspect(engine)
+    if "expenses" not in inspector.get_table_names():
+        return
+
+    columns = {column["name"] for column in inspector.get_columns("expenses")}
+    if "expense_time" not in columns:
+        with engine.begin() as connection:
+            connection.execute(text("ALTER TABLE expenses ADD COLUMN expense_time TIME"))
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    if engine.url.get_backend_name() == "sqlite":
+        Base.metadata.create_all(bind=engine)
+        ensure_sqlite_schema()
+    seed_admin_user()
+    yield
+
+
+app = FastAPI(title=settings.app_name, version="0.1.0", lifespan=lifespan)
+
+
+@app.middleware("http")
+async def security_headers(request, call_next):
+    response = await call_next(request)
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "no-referrer")
+    response.headers.setdefault(
+        "Permissions-Policy", "camera=(self), microphone=(), geolocation=()"
+    )
+    if request.url.path.startswith(f"{settings.api_prefix}/auth") or request.headers.get(
+        "authorization"
+    ):
+        response.headers["Cache-Control"] = "no-store"
+    if request.url.scheme == "https":
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    return response
 for router in (auth.router, expenses.router, policies.router, audit.router):
     app.include_router(router, prefix=settings.api_prefix)
 
@@ -32,3 +59,15 @@ for router in (auth.router, expenses.router, policies.router, audit.router):
 @app.get("/health", tags=["operations"])
 def health():
     return {"status": "ok"}
+
+
+frontend_dir = Path(__file__).resolve().parent.parent / "frontend"
+app.mount("/static", StaticFiles(directory=frontend_dir), name="static")
+
+
+@app.get("/", include_in_schema=False)
+def frontend():
+    return FileResponse(
+        frontend_dir / "index.html",
+        headers={"Cache-Control": "no-store, max-age=0"},
+    )

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -22,7 +22,19 @@ def create_policy(
     user: User = Depends(require_roles(UserRole.admin)),
     db: Session = Depends(get_db),
 ):
-    policy = Policy(organization_id=user.organization_id, **payload.model_dump())
+    values = payload.model_dump()
+    values["category"] = values["category"].strip()
+    values["country_code"] = values["country_code"].upper()
+    values["currency"] = values["currency"].upper()
+    if db.scalar(
+        select(Policy.id).where(
+            Policy.organization_id == user.organization_id,
+            Policy.category == values["category"],
+            Policy.country_code == values["country_code"],
+        )
+    ):
+        raise HTTPException(status.HTTP_409_CONFLICT, "Esta política já está cadastrada.")
+    policy = Policy(organization_id=user.organization_id, **values)
     db.add(policy)
     db.flush()
     audit(db, user, "policy", policy.id, "created")
