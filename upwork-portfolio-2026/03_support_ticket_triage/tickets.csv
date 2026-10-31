@@ -1,0 +1,6 @@
+id,subject,body
+T-01,API integration sync failed,Webhook endpoint returns error 500 after API sync
+T-02,Invoice refund required,The payment was duplicated and an invoice refund is needed
+T-03,Production down and patient safety concern,Entire site offline; please check patient safety procedures
+T-04,Login blocked for operator,Password reset and access denied on login
+T-05,Question about hours,Can I contact team@example.com tomorrow

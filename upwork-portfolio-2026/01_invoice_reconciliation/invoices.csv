@@ -1,0 +1,5 @@
+invoice_id,customer,amount,due_date
+INV-1001,Northwind Labs,350.00,2026-10-01
+INV-1002,Aster Clinic,120.00,2026-11-15
+INV-1003,Blue Harbor LLC,800.00,2026-10-15
+INV-1004,Cedar Retail,99.99,2026-09-28

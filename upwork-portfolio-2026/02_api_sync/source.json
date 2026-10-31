@@ -1,0 +1,6 @@
+[
+  {"id":"A-100","updated_at":"2026-10-30T09:00:00Z","status":"new","customer":"Acme"},
+  {"id":"A-101","updated_at":"2026-10-30T09:05:00Z","status":"open","customer":"Fictional Labs"},
+  {"id":"A-100","updated_at":"2026-10-30T10:00:00Z","status":"closed","customer":"Acme"},
+  {"id":"A-102","updated_at":"2026-10-30T11:00:00Z","status":"open","customer":"Example Group"}
+]
