@@ -1,0 +1,67 @@
+{
+  "source_record_count": 11,
+  "issues_found": 9,
+  "rows_flagged": 7,
+  "label_distribution": {
+    "negative": 2,
+    "neutral": 1,
+    "positive": 6
+  },
+  "issue_distribution": {
+    "conflicting_labels": 1,
+    "duplicate_id": 1,
+    "duplicate_text": 2,
+    "invalid_label": 1,
+    "label_normalization": 2,
+    "missing_label": 1,
+    "missing_text": 1
+  },
+  "findings": [
+    {
+      "row": 2,
+      "issue": "label_normalization",
+      "detail": "Negative -> negative"
+    },
+    {
+      "row": 4,
+      "issue": "missing_text",
+      "detail": "Text is blank"
+    },
+    {
+      "row": 5,
+      "issue": "duplicate_text",
+      "detail": "Repeated text at rows 1, 5"
+    },
+    {
+      "row": 6,
+      "issue": "invalid_label",
+      "detail": "Unrecognized label: unclear"
+    },
+    {
+      "row": 8,
+      "issue": "conflicting_labels",
+      "detail": "R007: negative, positive"
+    },
+    {
+      "row": 8,
+      "issue": "duplicate_id",
+      "detail": "R007: rows 7, 8"
+    },
+    {
+      "row": 8,
+      "issue": "duplicate_text",
+      "detail": "Repeated text at rows 7, 8"
+    },
+    {
+      "row": 9,
+      "issue": "missing_label",
+      "detail": "Label is blank"
+    },
+    {
+      "row": 10,
+      "issue": "label_normalization",
+      "detail": "POSITIVE -> positive"
+    }
+  ],
+  "notes": "Prototype quality audit; human validation required for semantic correctness."
+}

@@ -1,0 +1,12 @@
+id,text,label
+R001,The service appointment was handled quickly,positive
+R002,My report was delayed,Negative
+R003,The interface is acceptable,neutral
+R004,,positive
+R005,The service appointment was handled quickly,positive
+R006,Support did not solve the issue,unclear
+R007,Unexpected error during import,negative
+R007,Unexpected error during import,positive
+R008,No further comments,
+R009,The dashboard works correctly,POSITIVE
+R010,The documentation was helpful,positive
