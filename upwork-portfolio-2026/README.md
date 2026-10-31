@@ -15,3 +15,17 @@ Run the application with `python app.py` from its folder; run `python -m unittes
 The code examples were independently tested with 25 unit tests before publication. For full project summaries, consult [UPWORK_PORTFOLIO_COPY.md](UPWORK_PORTFOLIO_COPY.md).
 
 **Important:** This repository contains simulated scenarios and synthetic records. It is not a deployed healthcare diagnostic product, a regulated medical device, or evidence of a past paid software contract.
+
+## Visual portfolio previews
+
+These are **demonstration-only visualizations** of the synthetic reports, not screenshots of deployed customer products. Select a preview to open the SVG image stored with the corresponding code:
+
+| Project | Visual preview |
+|---|---|
+| Invoice reconciliation | ![Invoice reconciliation portfolio visual](01_invoice_reconciliation/portfolio_preview.svg) |
+| API-style data sync | ![Data sync portfolio visual](02_api_sync/portfolio_preview.svg) |
+| Support ticket triage | ![Triage portfolio visual](03_support_ticket_triage/portfolio_preview.svg) |
+| MedTech log monitor | ![MedTech reliability portfolio visual](04_medtech_log_monitor/portfolio_preview.svg) |
+| Service SLA dashboard | ![SLA performance portfolio visual](05_service_sla_dashboard/portfolio_preview.svg) |
+
+[Open the dedicated visual preview index](VISUAL_PREVIEWS.md).
